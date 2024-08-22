@@ -70,14 +70,6 @@ class MyData(Entity):
     key: str
     count: int
     name: str
-    
-    @classmethod
-    def from_dict(cls, data: dict) -> "Entity":
-        return cls(**data)
-    
-    def to_dict(self):
-        return self.__dict__
-
 
 if __name__ == "__main__":
     # Create a new DictStore
