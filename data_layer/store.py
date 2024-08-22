@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from data_layer.filter import Filter
 from data_layer.entity import Entity
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError
+from data_layer.exceptions import EntityNotFoundError
 from typing import Type
 
 
@@ -38,7 +39,10 @@ class DictStore(Store):
         self.data = {}
 
     def get(self, key: str) -> Entity:
-        return self.data[key]
+        try:
+            return self.data[key]
+        except KeyError:
+            raise EntityNotFoundError.for_key(key=key)
 
     def create(self, entity: Entity, key: str):
         self.data[key] = entity
@@ -60,14 +64,17 @@ class ElasticStore(Store):
         self.index = index
 
     def get(self, key: str) -> Entity:
-        doc = self.client.get(index=self.index, id=key)
-        return self.entity.from_dict(data=doc['_source'])
+        try:
+            doc = self.client.get(index=self.index, id=key)
+        except NotFoundError:
+            raise EntityNotFoundError.for_key(key=key)
+        return self.entity.from_es(data=doc['_source'])
 
     def create(self, entity: Entity, key: str):
-        self.client.index(index=self.index, id=key, body=entity.to_dict(), refresh=True)
+        self.client.index(index=self.index, id=key, body=entity.to_es(), refresh=True)
 
     def update(self, entity: Entity, key: str):
-        self.client.index(index=self.index, id=key, body=entity.to_dict(), refresh=True)
+        self.client.index(index=self.index, id=key, body=entity.to_es(), refresh=True)
 
     def delete(self, key: str):
         self.client.delete(index=self.index, id=key, refresh=True)

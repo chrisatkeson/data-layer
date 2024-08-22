@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from data_layer.entity import Entity
+from data_layer.entity import Entity, MetaData
 from data_layer.operator import Operator
 from dataclasses import Field
 from datetime import datetime
@@ -22,6 +22,12 @@ class Filter(ABC):
     def to_elasticsearch(self):
         pass
 
+    @property
+    def field_metadata(self):
+        if self.field:
+            return MetaData(**self.field.metadata)
+        return None
+
 
 class IsFilter(Filter):
 
@@ -40,9 +46,10 @@ class IsFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_keyword_field or self.field_metadata.es_field_name or self.field.name
         return {
             "term": {
-                self.field.name: self.value
+                field_name: self.value
             }
         }
 
@@ -75,11 +82,12 @@ class IsNotFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_keyword_field or self.field_metadata.es_field_name or self.field.name
         return {
             "bool": {
                 "must_not": {
                     "term": {
-                        self.field.name: self.value
+                        field_name: self.value
                     }
                 }
             }
@@ -117,9 +125,10 @@ class IsOneOfFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_keyword_field or self.field_metadata.es_field_name or self.field.name
         return {
             "terms": {
-                self.field.name: self.value
+                field_name: self.value
             }
         }
 
@@ -155,11 +164,12 @@ class IsNotOneOfFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_keyword_field or self.field_metadata.es_field_name or self.field.name
         return {
             "bool": {
                 "must_not": {
                     "terms": {
-                        self.field.name: self.value
+                        field_name: self.value
                     }
                 }
             }
@@ -196,9 +206,10 @@ class GreaterThanFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_field_name or self.field.name
         return {
             "range": {
-                self.field.name: {
+                field_name: {
                     "gt": self.value
                 }
             }
@@ -237,9 +248,10 @@ class LessThanFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_field_name or self.field.name
         return {
             "range": {
-                self.field.name: {
+                field_name: {
                     "lt": self.value
                 }
             }
@@ -272,9 +284,10 @@ class ExistsFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_field_name or self.field.name
         return {
             "exists": {
-                "field": self.field.name
+                "field": field_name
             }
         }
 
@@ -303,11 +316,12 @@ class DoesNotExistFilter(Filter):
         Create term elasticsearch filter
         :return: dict term filter
         """
+        field_name = self.field_metadata.es_field_name or self.field.name
         return {
             "bool": {
                 "must_not": {
                     "exists": {
-                        "field": self.field.name
+                        "field": field_name
                     }
                 }
             }
