@@ -3,6 +3,7 @@ import pytest
 from data_layer.tests.data import TestEntity
 from data_layer import (IsFilter, IsNotFilter, GreaterThanFilter, LessThanFilter, ExistsFilter, DoesNotExistFilter,
                         OrFilter, Filter, IsOneOfFilter, IsNotOneOfFilter)
+from data_layer import FilterFactory
 from datetime import datetime
 
 
@@ -64,6 +65,26 @@ def test_es_field_name(setup_teardown_test_entities, store, filters: list[Filter
     store = setup_teardown_test_entities
     results = store.read(filters=filters)
     assert {entity.key for entity in results} == keys
+
+
+@pytest.mark.parametrize("filter_dict, expected_filter", [
+    ({"field": "count", "operator": "is", "value": 2}, IsFilter),
+    ({"field": "count", "operator": "is_not", "value": 2}, IsNotFilter),
+    ({"field": "count", "operator": "is_in", "value": [2, 3]}, IsOneOfFilter),
+    ({"field": "count", "operator": "is_not_in", "value": [2, 3]}, IsNotOneOfFilter),
+    ({"field": "count", "operator": "gt", "value": 2}, GreaterThanFilter),
+    ({"field": "count", "operator": "lt", "value": 2}, LessThanFilter),
+    ({"field": "count", "operator": "exists"}, ExistsFilter),
+    ({"field": "count", "operator": "does_not_exist"}, DoesNotExistFilter),
+    ({"operator": "or", "filters": [{"field": "count", "operator": "is", "value": 2},
+                                    {"field": "count", "operator": "is", "value": 3}]}, OrFilter)
+])
+def test_filter_factory_from_dict(filter_dict: dict, expected_filter: type(Filter)):
+    """
+    Test the filter factory, which creates an instance of a filter from a dict representation.
+    """
+    data_filter = FilterFactory.filter_from_dict(filter_dict=filter_dict, entity=TestEntity)
+    assert isinstance(data_filter, expected_filter)
 
 
 

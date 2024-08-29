@@ -25,6 +25,10 @@ class Entity(ABC, metaclass=EntityMeta):
     def parse(field_type, value: any):
         if value is None:
             return None
+        if isinstance(value, field_type):
+            return value
+        if isinstance(value, list):
+            return [Entity.parse(field_type, v) for v in value]
         elif isinstance(value, field_type):
             return value
         elif field_type is datetime and isinstance(value, str):
