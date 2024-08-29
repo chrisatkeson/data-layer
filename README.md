@@ -20,6 +20,19 @@ The [`Entity`](#entity) class is a dataclass that represents the data you want t
 data and implements methods to convert the data to and from a dictionary. The `Entity` class is intended to be subclassed, 
 with each subclass representing a specific type of data to be stored. Subclasses must be implemented as Python dataclasses.
 
+Example:
+```python
+from dataclasses import dataclass
+from data_layer import Entity
+
+@dataclass
+class MyData(Entity):
+    key: str
+    count: int
+    name: str
+
+```
+
 ---
 
 ## Store
@@ -58,8 +71,31 @@ We currently have several implementations of the `Filter` class (update this lis
 - **DoesNotExistFilter**: A filter that checks if a field is None.
 - **OrFilter**: A filter that combines multiple filters with an OR operation.
 
+Filters also have a `to_dict` method that returns a dictionary representation of the filter, and a factory method
+filter_from_dict that creates a filter from a dictionary.  This is useful for serializing and deserializing filters for
+interfacing with other systems.
+
+Example:
+```python
+from data_layer import FilterFactory, Entity, DictStore
+from dataclasses import dataclass
+
+@dataclass
+class MyData(Entity):
+    count: int
+
+store = DictStore(entity=MyData)
+store.create(MyData(count=2), key="1")
+filter_dict = {"field": "count", "operator": "is", "value": 2}
+filter_instance = FilterFactory.filter_from_dict(filter_dict=filter_dict, entity=MyData)
+assert len(store.read(filters=[filter_instance])) == 1
+assert filter_instance.to_dict() == filter_dict
+
+```
+
+
 ---
-# Example
+# Basic Use Case
 ```python
 from dataclasses import dataclass
 from data_layer import Entity, DictStore, IsFilter
