@@ -79,7 +79,7 @@ def test_es_field_name(setup_teardown_test_entities, store, filters: list[Filter
     ({"operator": "or", "filters": [{"field": "count", "operator": "is", "value": 2},
                                     {"field": "count", "operator": "is", "value": 3}]}, OrFilter)
 ])
-def test_filter_factory_from_dict(filter_dict: dict, expected_filter: type(Filter)):
+def test_from_dict_to_dict(filter_dict: dict, expected_filter: type(Filter)):
     """
     Test the filter factory, which creates an instance of a filter from a dict representation.  Also verify that
     a filter can be converted back to a dict representation.
