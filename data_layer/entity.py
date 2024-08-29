@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod, ABCMeta
+from abc import ABC, ABCMeta
 from dataclasses import dataclass, fields
-from datetime import datetime
+
+from data_layer.util import parse
 
 
 @dataclass
@@ -21,20 +22,6 @@ class EntityMeta(ABCMeta):
 @dataclass
 class Entity(ABC, metaclass=EntityMeta):
 
-    @staticmethod
-    def parse(field_type, value: any):
-        if value is None:
-            return None
-        if isinstance(value, field_type):
-            return value
-        if isinstance(value, list):
-            return [Entity.parse(field_type, v) for v in value]
-        elif isinstance(value, field_type):
-            return value
-        elif field_type is datetime and isinstance(value, str):
-            return datetime.fromisoformat(value)
-        return field_type(value)
-
     def to_dict(self):
         """
         Convert the entity to a dict.
@@ -52,7 +39,7 @@ class Entity(ABC, metaclass=EntityMeta):
         params = {}
         for field in fields(cls):
             field_value = data.get(field.name)
-            params[field.name] = cls.parse(field_type=field.type, value=field_value)
+            params[field.name] = parse(value_type=field.type, value=field_value)
         return cls(**params)
 
     def to_es(self) -> dict:
@@ -78,5 +65,5 @@ class Entity(ABC, metaclass=EntityMeta):
             metadata = MetaData(**field.metadata)
             field_name = metadata.es_field_name or field.name
             field_value = data.get(field_name)
-            params[field.name] = cls.parse(field_type=field.type, value=field_value)
+            params[field.name] = parse(value_type=field.type, value=field_value)
         return cls(**params)

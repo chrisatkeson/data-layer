@@ -35,5 +35,14 @@ class DoesNotExistFilter(Filter):
         value = getattr(entity, self.field.name, None)
         return value is None
 
+    def to_dict(self) -> dict:
+        """
+        Convert the filter to a dict.
+        """
+        return {
+            "field": self.field.name,
+            "operator": self.operator.value
+        }
+
     def __repr__(self):
         return f"{self.field.name} does not exist"

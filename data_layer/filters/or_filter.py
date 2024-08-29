@@ -36,5 +36,15 @@ class OrFilter(Filter):
         """
         return any([f.evaluate(entity) for f in self.filters])
 
+    def to_dict(self) -> dict:
+        """
+        Overwrite to_dict method to return a dictionary representation of the filter
+        :return: a dictionary representation of the filter
+        """
+        return {
+            "operator": self.operator.value,
+            "filters": [f.to_dict() for f in self.filters]
+        }
+
     def __repr__(self):
         return f"{' OR '.join([str(f) for f in self.filters])}"

@@ -1,6 +1,7 @@
 from data_layer.filters import *
 from data_layer.operator import Operator
 from data_layer import Entity
+from data_layer.util import parse
 from data_layer.exceptions import InvalidOperatorError
 
 
@@ -44,7 +45,7 @@ class FilterFactory:
         value = filter_dict.get("value")
 
         if field:
-            value = Entity.parse(field_type=field.type, value=value)
+            value = parse(value_type=field.type, value=value)
 
         if operator == Operator.OR:
             filters = filter_dict.get("filters", [])

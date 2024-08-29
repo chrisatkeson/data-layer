@@ -81,10 +81,12 @@ def test_es_field_name(setup_teardown_test_entities, store, filters: list[Filter
 ])
 def test_filter_factory_from_dict(filter_dict: dict, expected_filter: type(Filter)):
     """
-    Test the filter factory, which creates an instance of a filter from a dict representation.
+    Test the filter factory, which creates an instance of a filter from a dict representation.  Also verify that
+    a filter can be converted back to a dict representation.
     """
     data_filter = FilterFactory.filter_from_dict(filter_dict=filter_dict, entity=TestEntity)
     assert isinstance(data_filter, expected_filter)
+    assert data_filter.to_dict() == filter_dict
 
 
 

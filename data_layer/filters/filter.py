@@ -3,6 +3,7 @@ from dataclasses import Field
 
 from data_layer.entity import Entity, MetaData
 from data_layer.operator import Operator
+from data_layer.util import serialize
 
 
 class Filter(ABC):
@@ -27,3 +28,17 @@ class Filter(ABC):
         if self.field:
             return MetaData(**self.field.metadata)
         return None
+
+    def to_dict(self) -> dict:
+        """
+        Convert the filter to a dict.
+        :return: a dict representation of the filter.
+        """
+        data = {
+            "field": self.field.name,
+            "operator": self.operator.value
+        }
+        if self.field and self.value is not None:
+            value = serialize(self.value)
+            data["value"] = value
+        return data
